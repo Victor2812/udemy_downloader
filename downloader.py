@@ -200,6 +200,8 @@ def main():
         action='store_true')
     parser.add_argument('-w', '--words', help="Keywords to search for the \
         course to download")
+    parser.add_argument('-v', '--version', help="Show current version",
+        action='version', version=f"%(prog)s {__version__}")
     parser.add_argument('token', help='Udemy "access_token" cookie')
 
     args = parser.parse_args()
