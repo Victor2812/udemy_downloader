@@ -1,8 +1,49 @@
 # Udemy Course Downloader
 
+⚠ Python version shall be 3.10 or higher.
+
+## Preparación
+
+Check that the python version is supported
+```bash
+python --version
+```
+
+### User-wide lib installation
+
+Install required libraries
+```bash
+python -m pip install -r requirements.txt
+```
+
+### Using a virtual environment
+
+Create the virtual environment:
+```bash
+python -m venv venv
+```
+
+Activate the virtual environment:
+```bash
+# Linux/Unix-based OS
+source venv/Scripts/activate
+
+# Windows (PowerShell)
+.\venv\Scripts\Activate.ps1
+
+# Windows (CMD)
+venv\Scripts\activate.bat
+```
+
+Install the requirements:
+```bash
+pip install -r requirements.txt
+```
+
+
 ## Usage
 ```bash
-$ python downloader.py --help
+python downloader.py --help
 ```
 
 ```
@@ -27,7 +68,7 @@ If you use -w every word you type will be used to search for the course you want
 ### Example
 
 ```bash
-$ python downloader.py <token> -w python with examples
+python downloader.py <token> -w python with examples
 ```
 
 ```
