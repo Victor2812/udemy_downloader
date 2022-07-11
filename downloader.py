@@ -2,12 +2,10 @@ import argparse
 import os
 import requests
 import logging
-from pathlib import Path
 from typing import Dict, List, Tuple
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
-__author__ = "github.com/6e0d0a"
 __version__ = "0.1.0"
 
 
@@ -48,22 +46,24 @@ class UdemyAPI:
 
     def get_course_lectures(self, course_id: int) -> Tuple[int, Dict]:
         """Obtains course readings"""
-        data = self.__get(f"courses/{course_id}/cached-subscriber-curriculum-items/").json()
+        data = self.__get(f"courses/{course_id}/\
+            cached-subscriber-curriculum-items/").json()
         return data['count'], data['results']
 
     def get_course_lecture_data(self, course_id: int, lecture_id: int):
         """Obtains information from a lesson"""
-        data = self.__get(f"users/me/subscribed-courses/{course_id}/lectures/{lecture_id}", {
+        data = self.__get(f"users/me/subscribed-courses/{course_id}/\
+            lectures/{lecture_id}", {
             "fields[lecture]": "asset,supplementary_assets",
-            "fields[asset]": "asset_type,download_urls,captions,title,filename,data,body,media_sources"
+            "fields[asset]": "asset_type,download_urls,captions,title,\
+                filename,data,body,media_sources"
         }).json()
         return data
 
 
-
 def get_course_download_data(api: UdemyAPI, course: Dict) -> List:
     title = course['title']
-    
+
     logging.info(f'Getting information of "{title}"...')
     l_count, lectures = api.get_course_lectures(course['id'])
     logging.info(f'{l_count} lessons found for "{title}"')
@@ -74,7 +74,8 @@ def get_course_download_data(api: UdemyAPI, course: Dict) -> List:
     download_queue = []
 
     for i, lecture in enumerate(lectures):
-        logging.info(f"Getting lesson information... {(i+1) / l_count * 100:0.1f}%")
+        logging.info(f"Getting lesson information... \
+            {(i+1) / l_count * 100:0.1f}%")
 
         if lecture['_class'].lower() == 'chapter':
             chapter = lecture['title']
@@ -122,7 +123,8 @@ def get_course_download_data(api: UdemyAPI, course: Dict) -> List:
                 download_queue.append({
                     'chapter': chapter,
                     'chapter_index': chapter_index,
-                    'element_index': element_index - 1, # -1 porque generalmente se refieren al elemento anterior
+                    # -1 to refer to the previous item
+                    'element_index': element_index - 1,
                     't': 'file',
                     'dst': sa['filename'],
                     'src': sa['download_urls']['File'][0]['file']
@@ -150,7 +152,8 @@ def downloader(course_name: str, element: Dict):
         path = course_name
 
         if element['chapter']:
-            path = os.path.join(path, f"{element['chapter_index']}. {element['chapter']}")
+            path = os.path.join(path, f"{element['chapter_index']}. \
+                {element['chapter']}")
 
         try:
             os.makedirs(path)
@@ -174,7 +177,7 @@ def downloader(course_name: str, element: Dict):
         logging.info(f'Getting article "{element["title"]}"')
 
 
-def word_course_selector(courses: List[Dict], words: List[str]) -> Dict|None:
+def word_course_selector(courses: List[Dict], words: List[str]) -> Dict | None:
     for c in courses:
         if all(map(lambda x: x in c['title'].lower(), words)):
             return c
@@ -193,23 +196,24 @@ def manual_course_selector(courses: List[Dict]) -> Dict:
 
 def main():
     parser = argparse.ArgumentParser(description="Udemy Course Downloader")
-    parser.add_argument('-d', '--debug', help="Enable debug output", action='store_true')
-    parser.add_argument('-w', '--words', help="Keywords to search for the course to download")
+    parser.add_argument('-d', '--debug', help="Enable extended logging",
+        action='store_true')
+    parser.add_argument('-w', '--words', help="Keywords to search for the \
+        course to download")
     parser.add_argument('token', help='Udemy "access_token" cookie')
 
     args = parser.parse_args()
-    
+
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
-    
 
     logging.info(f'Getting courses...')
     api = UdemyAPI(args.token)
     courses_count, courses = api.get_my_courses()
 
-    selected_course = None # Curso seleccionado
+    selected_course = None  # Curso seleccionado
 
     if courses_count < 1:
         logging.warning("The user has not subscribed to any course.")
@@ -225,12 +229,13 @@ def main():
     if not selected_course:
         logging.warning("No course could be selected")
     else:
-        elements = get_course_download_data(api, selected_course)           
+        elements = get_course_download_data(api, selected_course)
 
         with ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
             futures = []
             for e in elements:
-                futures.append(executor.submit(downloader, selected_course['title'], e))
+                f = executor.submit(downloader, selected_course['title'], e)
+                futures.append(f)
             for f in as_completed(futures):
                 f.result()
 
