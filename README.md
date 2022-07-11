@@ -2,7 +2,7 @@
 
 ⚠ Python version shall be 3.10 or higher.
 
-## Preparación
+## Preparation
 
 Check that the python version is supported
 ```bash
